@@ -6,7 +6,7 @@ val gdxVersion: String by project
 val coroutinesVersion: String by project
 val ktorVersion: String by project
 val jnaVersion: String by project
-
+val roboVMVersion: String by project
 buildscript {
     repositories {
         // Chinese mirrors for quicker loading for chinese devs - uncomment if you're chinese
@@ -14,8 +14,9 @@ buildscript {
         // maven{ url = uri("https://maven.aliyun.com/repository/google") }
         // maven{ url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
         mavenCentral()
-        google()  // needed for com.android.tools.build:gradle
-        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
+        mavenLocal()
+        google() // needed for com.android.tools.build:gradle
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         gradlePluginPortal()
     }
     dependencies {
@@ -34,7 +35,6 @@ kotlin {
     }
 }
 
-
 // Plugins used for serialization of JSON for networking
 plugins {
     val kotlinVersion: String by project
@@ -51,35 +51,34 @@ allprojects {
 
     apply(plugin = "io.github.yairm210.purity-plugin")
     configure<yairm210.purity.PurityConfiguration> {
-        wellKnownPureFunctions = setOf(
-        )
-        wellKnownReadonlyFunctions = setOf(
-            "com.badlogic.gdx.math.Vector2.len",
-            "com.badlogic.gdx.math.Vector2.cpy",
-            "com.badlogic.gdx.math.Vector2.hashCode",
-
-            "com.badlogic.gdx.graphics.Color.cpy",
-            "com.badlogic.gdx.graphics.Color.toString",
-
-            "com.badlogic.gdx.files.FileHandle.child",
-            "com.badlogic.gdx.files.FileHandle.list",
-            "com.badlogic.gdx.files.FileHandle.exists",
-            "com.badlogic.gdx.files.FileHandle.isDirectory",
-            "com.badlogic.gdx.files.FileHandle.isFile",
-            "com.badlogic.gdx.files.FileHandle.name",
-
-            "java.util.stream.StreamSupport.longStream",
-            "java.util.stream.LongStream.parallel",
-            "kotlin.sequences.shuffled",
-            "kotlin.LongArray.get",
-            "kotlin.LongArray.iterator",
-            "kotlin.collections.copyInto",
-        )
-        wellKnownPureClasses = setOf(
-        )
-        wellKnownInternalStateClasses = setOf(
-            "com.badlogic.gdx.math.Vector2",
-        )
+        wellKnownPureFunctions =
+            setOf()
+        wellKnownReadonlyFunctions =
+            setOf(
+                "com.badlogic.gdx.math.Vector2.len",
+                "com.badlogic.gdx.math.Vector2.cpy",
+                "com.badlogic.gdx.math.Vector2.hashCode",
+                "com.badlogic.gdx.graphics.Color.cpy",
+                "com.badlogic.gdx.graphics.Color.toString",
+                "com.badlogic.gdx.files.FileHandle.child",
+                "com.badlogic.gdx.files.FileHandle.list",
+                "com.badlogic.gdx.files.FileHandle.exists",
+                "com.badlogic.gdx.files.FileHandle.isDirectory",
+                "com.badlogic.gdx.files.FileHandle.isFile",
+                "com.badlogic.gdx.files.FileHandle.name",
+                "java.util.stream.StreamSupport.longStream",
+                "java.util.stream.LongStream.parallel",
+                "kotlin.sequences.shuffled",
+                "kotlin.LongArray.get",
+                "kotlin.LongArray.iterator",
+                "kotlin.collections.copyInto",
+            )
+        wellKnownPureClasses =
+            setOf()
+        wellKnownInternalStateClasses =
+            setOf(
+                "com.badlogic.gdx.math.Vector2",
+            )
         warnOnPossibleAnnotations = false
     }
 
@@ -94,6 +93,7 @@ allprojects {
         // maven{ url = uri("https://maven.aliyun.com/repository/google") }
         mavenCentral()
         google()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
         maven { url = uri("https://oss.sonatype.org/content/repositories/releases/") }
         maven { url = uri("https://jitpack.io") } // for java-discord-rpc
@@ -177,6 +177,20 @@ if (getSdkPath() != null) {
     }
 }
 
+if (System.getProperty("os.name").contains("Mac")) {
+    project(":ios") {
+        apply(plugin = "kotlin")
+
+        dependencies {
+            "implementation"(project(":core"))
+            "implementation"("com.robovmx:robovm-rt:$roboVMVersion")
+            "implementation"("com.robovmx:robovm-cocoatouch:$roboVMVersion")
+            "implementation"("com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion")
+            "implementation"("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios")
+            "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+        }
+    }
+}
 
 project(":core") {
     apply(plugin = "kotlin")
@@ -199,7 +213,6 @@ project(":core") {
         // JSON serialization and de-serialization
         "implementation"("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     }
-
 
     // Taken from https://github.com/TomGrill/gdx-testing
     project(":tests") {

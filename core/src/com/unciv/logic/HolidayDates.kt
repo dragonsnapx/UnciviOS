@@ -7,11 +7,32 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
+import java.time.zone.ZoneRulesException
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
 
 object HolidayDates {
+    private val fallbackZoneId: ZoneId = ZoneId.of("UTC")
+
+    private fun safeZoneId(): ZoneId {
+        return try {
+            ZoneId.systemDefault()
+        } catch (_: ZoneRulesException) {
+            fallbackZoneId
+        } catch (_: RuntimeException) {
+            fallbackZoneId
+        }
+    }
+
+    private fun safeToday(): LocalDate {
+        return try {
+            LocalDate.now(safeZoneId())
+        } catch (_: RuntimeException) {
+            LocalDate.ofEpochDay(0)
+        }
+    }
+
     /**
      *  Known holidays (for easter egg use).
      *  @property getByYear Determines when the holiday happens for a given year.
@@ -60,7 +81,7 @@ object HolidayDates {
             // This makes it the 15th day after the Spring Equinox, either 4, 5 or 6 April in a given year"
             override fun getByYear(year: Int): DateRange {
                 val springEquinoxInstant = Tables.equinoxes[year] ?: return DateRange.never
-                val springEquinox = springEquinoxInstant.atZone(ZoneId.systemDefault()).toLocalDate()  // This way, because LocalDate.ofInstant is missing from Android's Java
+                val springEquinox = springEquinoxInstant.atZone(safeZoneId()).toLocalDate()  // This way, because LocalDate.ofInstant is missing from Android's Java
                 return DateRange.of(springEquinox.plusDays(15L))
             }
         },
@@ -145,13 +166,13 @@ object HolidayDates {
             fun of(year: Int, month: Int, day: Int) = of(LocalDate.of(year, month, day))
             fun of(date: LocalDate, duration: Int) = DateRange(date, date.plusDays(duration - 1L))
             fun of(year: Int, month: Int, day: Int, duration: Int) = of(LocalDate.of(year, month, day), duration)
-            val never = DateRange(LocalDate.now(), LocalDate.now().plusDays(-1L))
+            val never = DateRange(safeToday(), safeToday().plusDays(-1L))
         }
     }
 
     fun getHolidayByYear(holiday: Holidays, year: Int) = holiday.getByYear(year)
 
-    fun getHolidayByDate(date: LocalDate = LocalDate.now()): Holidays? {
+    fun getHolidayByDate(date: LocalDate = safeToday()): Holidays? {
         return System.getProperty("easterEgg")?.let {
             Holidays.safeValueOf(it)
         } ?: Holidays.entries.firstOrNull {
@@ -162,7 +183,7 @@ object HolidayDates {
 
     fun getMonth(): Month = System.getProperty("month")?.toIntOrNull()?.let {
             Month.of(it)
-        } ?: LocalDate.now().month
+        } ?: safeToday().month
 
     private fun LocalDate.closestWeekday(day: DayOfWeek): LocalDate {
         val delta = (7 + dayOfWeek.ordinal - day.ordinal) % 7

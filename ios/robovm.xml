@@ -1,0 +1,48 @@
+<config>
+    <executableName>Unciv</executableName>
+    <mainClass>com.unciv.app.ios.IOSLauncher</mainClass>
+    <os>ios</os>
+    <arch>arm64</arch>
+    <target>ios</target>
+
+    <!-- iOS SDK Configuration -->
+    <iosInfoPList>Info.plist.xml</iosInfoPList>
+
+    <!-- Resources -->
+    <resources>
+        <resource>
+            <directory>../android/assets</directory>
+        </resource>
+        <resource>
+            <directory>data</directory>
+        </resource>
+    </resources>
+
+    <!-- iOS Frameworks -->
+    <frameworks>
+        <framework>UIKit</framework>
+        <framework>OpenGLES</framework>
+        <framework>QuartzCore</framework>
+        <framework>CoreGraphics</framework>
+        <framework>OpenAL</framework>
+        <framework>AudioToolbox</framework>
+        <framework>AVFoundation</framework>
+        <framework>Foundation</framework>
+        <framework>CoreText</framework>
+        <framework>UserNotifications</framework>
+        <framework>BackgroundTasks</framework>
+    </frameworks>
+
+    <!-- Force link classes that RoboVM might miss -->
+    <forceLinkClasses>
+        <pattern>com.badlogic.gdx.scenes.scene2d.ui.*</pattern>
+        <pattern>com.unciv.**</pattern>
+        <pattern>kotlin.**</pattern>
+        <pattern>kotlinx.coroutines.**</pattern>
+        <pattern>java.util.function.**</pattern>
+        <pattern>java.util.stream.**</pattern>
+        <!-- Explicit Kotlin classes for reflection -->
+    </forceLinkClasses>
+    
+    <treeShaker>conservative</treeShaker>
+</config>

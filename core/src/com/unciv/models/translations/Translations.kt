@@ -504,7 +504,7 @@ fun String.getPlaceholderParameters(): List<String> {
         }
         if (stringToParse[i] == ']' && depthOfBraces > 0) {
             depthOfBraces--
-            if (depthOfBraces == 0) parameters.add(substring(startOfCurrentParameter,i))
+            if (depthOfBraces == 0) parameters.add(stringToParse.substring(startOfCurrentParameter,i))
         }
     }
     return parameters
