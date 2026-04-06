@@ -21,7 +21,7 @@ kotlin {
 java {
     // required for building Unciv with a Java version higher than 24 (e.g. Java 25)
     sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 val mainClassName = "com.unciv.app.desktop.DesktopLauncher"

@@ -44,24 +44,20 @@
         <string>UIInterfaceOrientationPortraitUpsideDown</string>
     </array>
 
-    <!-- Supported Orientations - iPhone -->
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 
-    <!-- Minimum iOS Version -->
     <key>MinimumOSVersion</key>
-    <string>15.0</string>
+    <string>16.0</string>
 
-    <!-- Status Bar -->
     <key>UIStatusBarHidden</key>
     <true/>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
 
-    <!-- Capabilities -->
     <key>UIBackgroundModes</key>
     <array>
         <string>fetch</string>
@@ -85,7 +81,6 @@
         <true/>
     </dict>
 
-    <!-- URL Scheme for deep linking -->
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
@@ -98,6 +93,11 @@
 
     <!-- Requires full screen -->
     <key>UIRequiresFullScreen</key>
-    <false/>
+    <true/>
+
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>arm64</string>
+    </array>
 </dict>
 </plist>

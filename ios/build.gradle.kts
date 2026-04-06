@@ -58,7 +58,7 @@ dependencies {
 }
 
 // Configure RoboVM
-// project.extensions.configure<org.robovm.gradle.RoboVMPluginExtension>("robovm") {
-//     iosSignIdentity = System.getenv("IOS_SIGN_IDENTITY")
-//     iosProvisioningProfile = System.getenv("IOS_PROVISIONING_PROFILE")
-// }
+project.extensions.configure<org.robovm.gradle.RoboVMPluginExtension>("robovm") {
+    iosSignIdentity = System.getenv("IOS_SIGN_IDENTITY")
+    iosProvisioningProfile = System.getenv("IOS_PROVISIONING_PROFILE")
+}

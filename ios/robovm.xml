@@ -12,9 +12,11 @@
     <resources>
         <resource>
             <directory>../android/assets</directory>
+            <skipPngCrush>true</skipPngCrush>
         </resource>
         <resource>
             <directory>data</directory>
+            <skipPngCrush>true</skipPngCrush>
         </resource>
     </resources>
 
