@@ -99,5 +99,9 @@
     <array>
         <string>arm64</string>
     </array>
+    
+    <!-- Export Compliance: App uses only standard encryption (HTTPS) -->
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false />
 </dict>
 </plist>

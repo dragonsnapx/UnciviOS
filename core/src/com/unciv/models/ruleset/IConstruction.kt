@@ -126,8 +126,20 @@ interface INonPerpetualConstruction : IConstruction, INamed, IHasUniques {
 
     @Readonly
     override fun requiredResources(state: GameContext): Set<String> {
-        return getResourceRequirementsPerTurn(state).keys +
-                getMatchingUniques(UniqueType.CostsResources, state).map { it.params[1] }
+        return requiredResourcesSafe(state)
+    }
+    
+    @Readonly
+    private fun requiredResourcesSafe(state: GameContext): Set<String> {
+        val perTurnResources = getResourceRequirementsPerTurn(state)?.keys ?: emptySet()
+
+        // iOS/RoboVM: Convert Sequence to List first to avoid RoboVM Sequence bugs
+        val uniquesList = getMatchingUniques(UniqueType.CostsResources, state).toList()
+        val costResources = uniquesList
+            .mapNotNull { it.params.getOrNull(1) }
+            .toSet()
+
+        return perTurnResources + costResources
     }
     
     @Readonly
