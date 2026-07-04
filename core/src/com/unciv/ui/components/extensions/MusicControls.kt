@@ -76,17 +76,13 @@ interface MusicControls {
             }
         )
 
-        val getTipText: (Float) -> String = {
-            "%.0f".format(posToLength(it))
-        }
-
         add("Pause between tracks".tr()).left().fillX()
 
         val pauseLengthSlider = UncivSlider(
             0f, 30f, 1f,
             initial = lengthToPos(music.silenceLength),
             sound = UncivSound.Silent,
-            getTipText = getTipText
+            tipType = UncivSlider.TipType.None
         ) {
             music.silenceLength = posToLength(it)
             settings.pauseBetweenTracks = music.silenceLength.toInt()

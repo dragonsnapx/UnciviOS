@@ -2,6 +2,9 @@ package com.unciv.app.ios
 
 import com.badlogic.gdx.backends.iosrobovm.IOSApplication
 import com.badlogic.gdx.backends.iosrobovm.IOSApplicationConfiguration
+import com.badlogic.gdx.backends.iosrobovm.IOSGraphics
+import com.badlogic.gdx.backends.iosrobovm.IOSScreenBounds
+import com.badlogic.gdx.backends.iosrobovm.IOSUIViewController
 import com.unciv.logic.files.UncivFiles
 import com.unciv.ui.components.fonts.Fonts
 import com.unciv.utils.Display
@@ -13,6 +16,8 @@ import org.robovm.apple.foundation.NSSearchPathDomainMask
 import org.robovm.apple.uikit.UIApplication
 import org.robovm.apple.uikit.UIApplicationDelegateAdapter
 import org.robovm.apple.uikit.UIApplicationLaunchOptions
+import org.robovm.apple.uikit.UIScreen
+import kotlin.math.roundToInt
 
 /**
  * iOS launcher for Unciv.
@@ -27,7 +32,8 @@ class IOSLauncher : IOSApplication.Delegate() {
         Log.backend = IOSLogBackend()
 
         // Setup iOS display
-        Display.platform = IOSDisplay()
+        val displayImpl = IOSDisplay()
+        Display.platform = displayImpl
 
         // Setup iOS fonts
         Fonts.fontImplementation = IOSFont()
@@ -41,6 +47,7 @@ class IOSLauncher : IOSApplication.Delegate() {
 
         // Load settings
         val settings = UncivFiles.getSettingsForPlatformLaunchers(documentsDir)
+        displayImpl.setCutout(settings.androidCutout)
 
         // DEBUG: Test UniqueType initialization
         println("HELLO!!!")
@@ -79,7 +86,7 @@ class IOSLauncher : IOSApplication.Delegate() {
 
         // Create and initialize game
         val game = IOSGame()
-        return IOSApplication(game, config)
+        return SafeAreaIOSApplication(game, config, displayImpl)
     }
 
     override fun didBecomeActive(application: UIApplication) {
@@ -101,5 +108,55 @@ class IOSLauncher : IOSApplication.Delegate() {
             UIApplication.main<UIApplication, IOSLauncher>(args, null, IOSLauncher::class.java)
             pool.close()
         }
+    }
+}
+
+private class SafeAreaIOSApplication(
+    listener: IOSGame,
+    config: IOSApplicationConfiguration,
+    private val display: IOSDisplay
+) : IOSApplication(listener, config) {
+    override fun computeBounds(): IOSScreenBounds {
+        val window = getUIWindow() ?: return super.computeBounds()
+        val contentFrame = display.getContentFrame(window)
+        val width = contentFrame.width.roundToInt()
+        val height = contentFrame.height.roundToInt()
+        if (width <= 0 || height <= 0) return super.computeBounds()
+
+        val scale = UIScreen.getMainScreen().nativeScale
+        return IOSScreenBounds(
+            0,
+            0,
+            width,
+            height,
+            (width * scale).roundToInt(),
+            (height * scale).roundToInt()
+        )
+    }
+
+    override fun createUIViewController(graphics: IOSGraphics): IOSUIViewController {
+        return SafeAreaIOSUIViewController(this, graphics, display)
+    }
+}
+
+private class SafeAreaIOSUIViewController(
+    application: IOSApplication,
+    graphics: IOSGraphics,
+    private val display: IOSDisplay
+) : IOSUIViewController(application, graphics) {
+    override fun viewDidAppear(animated: Boolean) {
+        super.viewDidAppear(animated)
+        display.applySafeAreaFrame()
+    }
+
+    override fun viewDidLayoutSubviews() {
+        display.applySafeAreaFrame()
+        super.viewDidLayoutSubviews()
+        display.applySafeAreaFrame()
+    }
+
+    override fun viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        display.applySafeAreaFrame()
     }
 }

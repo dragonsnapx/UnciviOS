@@ -4,6 +4,8 @@ import com.unciv.models.metadata.GameSettings
 import com.unciv.utils.PlatformDisplay
 import com.unciv.utils.ScreenMode
 import com.unciv.utils.ScreenOrientation
+import org.robovm.apple.coregraphics.CGAffineTransform
+import org.robovm.apple.coregraphics.CGRect
 import org.robovm.apple.uikit.*
 import org.robovm.apple.foundation.NSSet
 import org.robovm.apple.uikit.UIWindowScene
@@ -20,6 +22,7 @@ import org.robovm.apple.uikit.UIWindow
 class IOSDisplay : PlatformDisplay {
 
     private var requestedOrientation = ScreenOrientation.Auto
+    private var useCutoutArea = true
 
     override fun hasOrientation(): Boolean = true
 
@@ -52,16 +55,50 @@ class IOSDisplay : PlatformDisplay {
         // Prefer the rootViewController's view safe area insets (most reliable)
         val rootVCViewInsets = window.rootViewController?.view?.safeAreaInsets
         if (rootVCViewInsets != null) {
-            if (rootVCViewInsets.top > 0.0) return true
+            if (rootVCViewInsets.hasInsets()) return true
         }
 
         // Fallback to window safe area insets
         val insets = window.safeAreaInsets
-        return (insets?.top ?: 0.0) > 0.0
+        return insets?.hasInsets() == true
     }
 
     override fun setCutout(enabled: Boolean) {
-        // iOS manages cutouts via safe area insets — nothing to do here
+        useCutoutArea = enabled
+        applySafeAreaFrame()
+    }
+
+    internal fun applySafeAreaFrame() {
+        val app = UIApplication.getSharedApplication()
+        val window = findKeyWindow(app) ?: return
+        val rootView = window.rootViewController?.view ?: return
+        val contentFrame = getContentFrame(window)
+
+        window.backgroundColor = UIColor.black()
+        rootView.transform = CGAffineTransform.Identity()
+        rootView.frame = CGRect(0.0, 0.0, contentFrame.width, contentFrame.height)
+        rootView.transform = CGAffineTransform.createTranslation(contentFrame.x, contentFrame.y)
+    }
+
+    internal fun getContentFrame(window: UIWindow): CGRect {
+        val bounds = window.bounds
+        if (useCutoutArea) return bounds
+
+        val insets = window.safeAreaInsets ?: return bounds
+        val orientation = window.windowScene?.interfaceOrientation
+        val isLandscape = orientation == UIInterfaceOrientation.LandscapeLeft ||
+            orientation == UIInterfaceOrientation.LandscapeRight
+
+        if (isLandscape) {
+            val sideInset = insets.left.coerceAtLeast(insets.right)
+            return if (sideInset > 0.0 && bounds.width > sideInset * 2.0)
+                CGRect(sideInset, 0.0, bounds.width - sideInset * 2.0, bounds.height)
+            else bounds
+        }
+
+        return if (insets.top > 0.0 && bounds.height > insets.top)
+            CGRect(0.0, insets.top, bounds.width, bounds.height - insets.top)
+        else bounds
     }
 
     override fun getScreenModes(): Map<Int, ScreenMode> {
@@ -126,4 +163,7 @@ class IOSDisplay : PlatformDisplay {
 
         return null
     }
+
+    private fun UIEdgeInsets.hasInsets() =
+        top > 0.0 || left > 0.0 || bottom > 0.0 || right > 0.0
 }
