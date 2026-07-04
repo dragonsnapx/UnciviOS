@@ -16,7 +16,7 @@ buildscript {
         mavenCentral()
         mavenLocal()
         google() // needed for com.android.tools.build:gradle
-        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
         gradlePluginPortal()
     }
     dependencies {

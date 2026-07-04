@@ -12,23 +12,22 @@ buildscript {
         mavenCentral()
         maven(url = "https://central.sonatype.com/repository/maven-snapshots")
     }
+    dependencies {
+        classpath("com.robovmx:robovm-gradle-plugin:10.2.2.4-SNAPSHOT")
+    }
 }
 
 plugins {
     id("kotlin")
-    id("com.robovmx.robovm") version "10.2.2.5-SNAPSHOT"
 }
 
 apply(plugin = "java")
+apply(plugin = "robovm")
 
 repositories {
     mavenLocal()
     mavenCentral()
     maven(url = "https://central.sonatype.com/repository/maven-snapshots")
-}
-
-robovm {
-    
 }
 
 sourceSets {

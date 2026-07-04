@@ -174,6 +174,7 @@ object HolidayDates {
     fun getHolidayByYear(holiday: Holidays, year: Int) = holiday.getByYear(year)
 
     fun getHolidayByDate(date: LocalDate = safeToday()): Holidays? {
+        val rng = Random(date.hashCode())
         return System.getProperty("easterEgg")?.let {
             Holidays.safeValueOf(it)
         } ?: Holidays.entries.firstOrNull {
